@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitness Progress Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .workout-entry {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .workout-entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .workout-entry-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .workout-entry-date {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .workout-entry-details {
+            color: #555;
+            margin-top: 5px;
+        }
+
+        .delete-btn {
+            background: #e74c3c;
+            padding: 6px 15px;
+            font-size: 14px;
+            width: auto;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-top: 20px;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+            font-style: italic;
+        }
+
+        #customExerciseInput {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💪 Fitness Progress Tracker</h1>
+
+        <div class="card">
+            <h2>Log Your Workout</h2>
+            <form id="workoutForm">
+                <div class="form-group">
+                    <label for="date">Date:</label>
+                    <input type="date" id="date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="exercise">Exercise:</label>
+                    <select id="exercise" required>
+                        <option value="">Select an exercise</option>
+                        <option value="Bench Press">Bench Press</option>
+                        <option value="Squat">Squat</option>
+                        <option value="Deadlift">Deadlift</option>
+                        <option value="Shoulder Press">Shoulder Press</option>
+                        <option value="Barbell Row">Barbell Row</option>
+                        <option value="Pull-ups">Pull-ups</option>
+                        <option value="Bicep Curls">Bicep Curls</option>
+                        <option value="Tricep Extensions">Tricep Extensions</option>
+                        <option value="Leg Press">Leg Press</option>
+                        <option value="Lat Pulldown">Lat Pulldown</option>
+                        <option value="custom">+ Add Custom Exercise</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="customExerciseInput">
+                    <label for="customExercise">Custom Exercise Name:</label>
+                    <input type="text" id="customExercise" placeholder="Enter exercise name">
+                </div>
+
+                <div class="form-group">
+                    <label for="weight">Weight (kg):</label>
+                    <input type="number" id="weight" step="0.5" required placeholder="e.g., 50">
+                </div>
+
+                <div class="form-group">
+                    <label for="sets">Number of Sets:</label>
+                    <input type="number" id="sets" min="1" required placeholder="e.g., 3">
+                </div>
+
+                <div class="form-group">
+                    <label for="reps">Reps per Set:</label>
+                    <input type="number" id="reps" min="1" required placeholder="e.g., 10">
+                </div>
+
+                <button type="submit">Add Workout Entry</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Your Progress</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalWorkouts">0</div>
+                    <div class="stat-label">Total Workouts</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalVolume">0</div>
+                    <div class="stat-label">Total Volume (kg)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="exerciseCount">0</div>
+                    <div class="stat-label">Exercises Tracked</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="chartExercise">Select Exercise to View Progress:</label>
+                <select id="chartExercise">
+                    <option value="">Select an exercise</option>
+                </select>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="progressChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Workout History</h2>
+            <div id="workoutLog">
+                <div class="no-data">No workouts logged yet. Start tracking your progress!</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script>
+        // Global variables
+        let workouts = [];
+        let chart = null;
+
+        // Load workouts from localStorage
+        function loadWorkouts() {
+            try {
+                const saved = localStorage.getItem('fitnessWorkouts');
+                if (saved) {
+                    workouts = JSON.parse(saved);
+                    updateDisplay();
+                }
+            } catch (error) {
+                console.error('Error loading workouts:', error);
+            }
+        }
+
+        // Save workouts to localStorage
+        function saveWorkouts() {
+            try {
+                localStorage.setItem('fitnessWorkouts', JSON.stringify(workouts));
+            } catch (error) {
+                console.error('Error saving workouts:', error);
+            }
+        }
+
+        // Set today's date
+        function setTodaysDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').value = today;
+        }
+
+        // Initialize app
+        function init() {
+            console.log('App initializing...');
+            setTodaysDate();
+            loadWorkouts();
+            
+            // Handle custom exercise
+            document.getElementById('exercise').addEventListener('change', function() {
+                const customInput = document.getElementById('customExerciseInput');
+                const customField = document.getElementById('customExercise');
+                if (this.value === 'custom') {
+                    customInput.style.display = 'block';
+                    customField.required = true;
+                } else {
+                    customInput.style.display = 'none';
+                    customField.required = false;
+                }
+            });
+
+            // Handle form submission
+            document.getElementById('workoutForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                console.log('Form submitted');
+                
+                let exerciseName = document.getElementById('exercise').value;
+                if (exerciseName === 'custom') {
+                    exerciseName = document.getElementById('customExercise').value.trim();
+                    if (!exerciseName) {
+                        alert('Please enter a custom exercise name');
+                        return;
+                    }
+                }
+
+                const weight = parseFloat(document.getElementById('weight').value);
+                const sets = parseInt(document.getElementById('sets').value);
+                const reps = parseInt(document.getElementById('reps').value);
+
+                const workout = {
+                    id: Date.now(),
+                    date: document.getElementById('date').value,
+                    exercise: exerciseName,
+                    weight: weight,
+                    sets: sets,
+                    reps: reps,
+                    volume: weight * sets * reps
+                };
+
+                workouts.push(workout);
+                workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
+                saveWorkouts();
+                updateDisplay();
+
+                // Reset form
+                this.reset();
+                setTodaysDate();
+                document.getElementById('customExerciseInput').style.display = 'none';
+                document.getElementById('customExercise').required = false;
+                
+                alert('Workout added successfully!');
+            });
+
+            // Handle chart selection
+            document.getElementById('chartExercise').addEventListener('change', updateChart);
+            
+            console.log('App initialized');
+        }
+
+        // Delete workout
+        function deleteWorkout(id) {
+            if (confirm('Delete this workout?')) {
+                workouts = workouts.filter(w => w.id !== id);
+                saveWorkouts();
+                updateDisplay();
+            }
+        }
+
+        // Update all displays
+        function updateDisplay() {
+            updateStats();
+            updateWorkoutLog();
+            updateChartDropdown();
+            updateChart();
+        }
+
+        // Update statistics
+        function updateStats() {
+            const totalWorkouts = workouts.length;
+            const totalVolume = workouts.reduce((sum, w) => sum + w.volume, 0);
+            const uniqueExercises = new Set(workouts.map(w => w.exercise)).size;
+
+            document.getElementById('totalWorkouts').textContent = totalWorkouts;
+            document.getElementById('totalVolume').textContent = Math.round(totalVolume).toLocaleString();
+            document.getElementById('exerciseCount').textContent = uniqueExercises;
+        }
+
+        // Update workout log
+        function updateWorkoutLog() {
+            const log = document.getElementById('workoutLog');
+            
+            if (workouts.length === 0) {
+                log.innerHTML = '<div class="no-data">No workouts logged yet. Start tracking your progress!</div>';
+                return;
+            }
+
+            log.innerHTML = workouts.map(w => `
+                <div class="workout-entry">
+                    <div class="workout-entry-header">
+                        <div>
+                            <div class="workout-entry-title">${w.exercise}</div>
+                            <div class="workout-entry-date">${new Date(w.date).toLocaleDateString('en-GB')}</div>
+                        </div>
+                        <button class="delete-btn" onclick="deleteWorkout(${w.id})">Delete</button>
+                    </div>
+                    <div class="workout-entry-details">
+                        <strong>${w.weight} kg</strong> × <strong>${w.sets} sets</strong> × <strong>${w.reps} reps</strong> 
+                        = <strong>${Math.round(w.volume)} kg volume</strong>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Update chart dropdown
+        function updateChartDropdown() {
+            const select = document.getElementById('chartExercise');
+            const exercises = [...new Set(workouts.map(w => w.exercise))].sort();
+            
+            select.innerHTML = '<option value="">Select an exercise</option>' +
+                exercises.map(ex => `<option value="${ex}">${ex}</option>`).join('');
+        }
+
+        // Update chart
+        function updateChart() {
+            const selectedExercise = document.getElementById('chartExercise').value;
+            const ctx = document.getElementById('progressChart').getContext('2d');
+
+            if (chart) {
+                chart.destroy();
+            }
+
+            if (!selectedExercise) {
+                chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: { labels: [], datasets: [] },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            title: {
+                                display: true,
+                                text: 'Select an exercise to view progress'
+                            }
+                        }
+                    }
+                });
+                return;
+            }
+
+            const exerciseWorkouts = workouts
+                .filter(w => w.exercise === selectedExercise)
+                .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            const dates = exerciseWorkouts.map(w => new Date(w.date).toLocaleDateString('en-GB'));
+            const weights = exerciseWorkouts.map(w => w.weight);
+            const volumes = exerciseWorkouts.map(w => w.volume);
+
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Weight (kg)',
+                        data: weights,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        yAxisID: 'y',
+                        fill: true
+                    }, {
+                        label: 'Volume (kg)',
+                        data: volumes,
+                        borderColor: '#764ba2',
+                        backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                        yAxisID: 'y1',
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: selectedExercise + ' - Progress Over Time'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            title: { display: true, text: 'Weight (kg)' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            position: 'right',
+                            title: { display: true, text: 'Volume (kg)' },
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Start app when page loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>
